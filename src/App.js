@@ -1,182 +1,120 @@
-import React, { useState, useEffect } from "react";
-import './App.css';
+// src/App.jsx
+import React, { useState } from "react";
+import "./App.css";
 
 function App() {
-  // Valor inicial para el input de números
-  const defaultValue = "2,1,2,2,3,2,2";
-
-  // Estados para la mayoría absoluta
-  const [input, setInput] = useState(defaultValue);
-  const [result, setResult] = useState(null);
-
-  // Estado para la lista de personas
-  const [persons, setPersons] = useState([]);
-
-  // Estado para el formulario de nueva persona
-  const [newPerson, setNewPerson] = useState({
-    nombre: "",
-    edad: "",
-    carrera: "",
-    esEstudiante: false,
-    esMaestro: false,
+  const [input, setInput] = useState("1,2,2,3,3,3,4");
+  const [mostRepeated, setMostRepeated] = useState(null);
+  const [people, setPeople] = useState([]);
+  const [person, setPerson] = useState({
+    type: "Estudiante",
+    name: "",
+    age: "",
+    career: "",
   });
 
-  // Función que encuentra el número que aparece > n/2 veces
-  const findMajorityElement = (arr) => {
-    const threshold = Math.floor(arr.length / 2);
+  // Encuentra el número más repetido
+  const findMostRepeated = () => {
+    const numberList = input.split(",").map((n) => parseInt(n.trim()));
     const counts = {};
+    let max = 0;
+    let mostFrequent = null;
 
-    for (let num of arr) {
+    for (const num of numberList) {
       counts[num] = (counts[num] || 0) + 1;
-      if (counts[num] > threshold) return num;
+
+      if (counts[num] > max) {
+        max = counts[num];
+        mostFrequent = num;
+      }
     }
 
-    return null;
+    setMostRepeated(mostFrequent);
   };
 
-  // Ejecuta el cálculo cuando cambia el input o al iniciarsds
-  useEffect(() => {
-    const numbers = input
-      .split(",")
-      .map((n) => parseInt(n.trim()))
-      .filter((n) => !isNaN(n));
-
-    setResult(findMajorityElement(numbers));
-  }, [input]);
-
-  // Maneja cambios en el formulario de persona
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setNewPerson((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+  const handlePersonChange = (e) => {
+    const { name, value } = e.target;
+    setPerson({ ...person, [name]: value });
   };
 
-  // Agrega una persona a la lista (con validación simple)
-  const handleAddPerson = () => {
-    if (
-      !newPerson.nombre.trim() ||
-      !newPerson.edad.trim() ||
-      !newPerson.carrera.trim() ||
-      (!newPerson.esEstudiante && !newPerson.esMaestro)
-    ) {
-      alert(
-        "Completa todos los campos y selecciona Estudiante o Maestro (o ambos)."
-      );
-      return;
-    }
-
-    setPersons((prev) => [...prev, newPerson]);
-
-    // Reset formulario
-    setNewPerson({
-      nombre: "",
-      edad: "",
-      carrera: "",
-      esEstudiante: false,
-      esMaestro: false,
+  const addPerson = () => {
+    setPeople([...people, person]);
+    setPerson({
+      type: "Estudiante",
+      name: "",
+      age: "",
+      career: "",
     });
   };
 
   return (
-    <div className="container">
-      {/* Sección mayoría absoluta */}
-      <section className="majority-section">
-        <h1>Mayoría Absoluta</h1>
+    <div className="app-container">
+      <h1>Buscador de número más repetido</h1>
 
-        <input
-          className="input-text"
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ej: 2,1,2,2,3,2,2"
-        />
+      <input
+        className="input"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Ingresa números separados por coma"
+      />
+      <button className="button" onClick={findMostRepeated}>
+        Calcular
+      </button>
 
+      {mostRepeated !== null && (
         <p className="result">
-          Resultado:{" "}
-          {result !== null ? result : <em>No hay número mayoritario</em>}
+          El número más repetido es: <strong>{mostRepeated}</strong>
         </p>
-      </section>
+      )}
 
       <hr />
 
-      {/* Sección personas */}
-      <section className="persons-section">
-        <h1>Agregar Personas</h1>
+      <h2>Agregar persona</h2>
 
-        <input
-          className="input-text"
-          type="text"
-          name="nombre"
-          placeholder="Nombre"
-          value={newPerson.nombre}
-          onChange={handleInputChange}
-        />
+      <select
+        className="input"
+        name="type"
+        value={person.type}
+        onChange={handlePersonChange}
+      >
+        <option value="Estudiante">Estudiante</option>
+        <option value="Maestro">Maestro</option>
+      </select>
 
-        <input
-          className="input-text"
-          type="number"
-          name="edad"
-          placeholder="Edad"
-          value={newPerson.edad}
-          onChange={handleInputChange}
-          min="0"
-        />
+      <input
+        className="input"
+        name="name"
+        value={person.name}
+        onChange={handlePersonChange}
+        placeholder="Nombre"
+      />
+      <input
+        className="input"
+        name="age"
+        value={person.age}
+        onChange={handlePersonChange}
+        placeholder="Edad"
+        type="number"
+      />
+      <input
+        className="input"
+        name="career"
+        value={person.career}
+        onChange={handlePersonChange}
+        placeholder="Carrera o Materia"
+      />
 
-        <input
-          className="input-text"
-          type="text"
-          name="carrera"
-          placeholder="Carrera"
-          value={newPerson.carrera}
-          onChange={handleInputChange}
-        />
+      <button className="button" onClick={addPerson}>
+        Agregar Persona
+      </button>
 
-        <div className="checkbox-group">
-          <label>
-            <input
-              type="checkbox"
-              name="esEstudiante"
-              checked={newPerson.esEstudiante}
-              onChange={handleInputChange}
-            />{" "}
-            Estudiante
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="esMaestro"
-              checked={newPerson.esMaestro}
-              onChange={handleInputChange}
-            />{" "}
-            Maestro
-          </label>
-        </div>
-
-        <button className="btn" onClick={handleAddPerson}>
-          Agregar Persona
-        </button>
-
-        <h2>Personas agregadas:</h2>
-        {persons.length === 0 ? (
-          <p>No hay personas agregadas.</p>
-        ) : (
-          <ul className="persons-list">
-            {persons.map((p, i) => (
-              <li key={i}>
-                <strong>{p.nombre}</strong>, {p.edad} años, {p.carrera} —{" "}
-                {p.esEstudiante && p.esMaestro
-                  ? "Estudiante y Maestro"
-                  : p.esEstudiante
-                  ? "Estudiante"
-                  : "Maestro"}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <ul className="people-list">
+        {people.map((p, index) => (
+          <li key={index}>
+            {p.type}: {p.name}, {p.age} años, {p.career}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
